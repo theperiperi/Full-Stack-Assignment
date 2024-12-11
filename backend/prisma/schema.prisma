@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          Role      @default(APPLICANT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sentOffers    Offer[]   @relation("RecruiterOffers")
+  receivedOffers Offer[]  @relation("ApplicantOffers")
+}
+
+model Offer {
+  id          String    @id @default(cuid())
+  position    String
+  salary      Float
+  startDate   DateTime
+  status      OfferStatus @default(PENDING)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  recruiterId String
+  recruiter   User      @relation("RecruiterOffers", fields: [recruiterId], references: [id])
+  applicantId String
+  applicant   User      @relation("ApplicantOffers", fields: [applicantId], references: [id])
+  signature   String?
+}
+
+enum Role {
+  RECRUITER
+  APPLICANT
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
